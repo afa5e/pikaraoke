@@ -39,7 +39,7 @@ for filename in os.listdir(folder_path):
         logging.debug(f'Processing {name}')
         
         # Get the text after any type of dash
-        text = re.split(r'\s*-\s*', name)[1]
+        text = re.split(r'\s[-–—‒]\s', name)[1]
         
         # Search for the song on Spotify
         results = sp.search(q=text, type='track', limit=1)
