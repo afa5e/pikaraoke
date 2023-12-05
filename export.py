@@ -2,6 +2,7 @@ import os
 import json
 import requests
 import spotipy
+import logging
 from spotipy.oauth2 import SpotifyClientCredentials
 
 # Specify the folder path
@@ -27,6 +28,8 @@ for filename in os.listdir(folder_path):
     if filename.endswith('.mp4'):
         # Get the filename without extension
         name = os.path.splitext(filename)[0]
+
+        logging.debug(f'Processing {name}')
         
         # Get the text after " - "
         text = name.split(' - ')[1]
