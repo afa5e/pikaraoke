@@ -3,12 +3,13 @@ import json
 import requests
 import spotipy
 import logging
+import re
 from spotipy.oauth2 import SpotifyClientCredentials
 
 logging.basicConfig(
     format="[%(asctime)s] %(levelname)s: %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
-    level=int(log_level),
+    level=int(1),
 )
 
 # Specify the folder path
@@ -37,8 +38,8 @@ for filename in os.listdir(folder_path):
 
         logging.debug(f'Processing {name}')
         
-        # Get the text after " - "
-        text = name.split(' - ')[1]
+        # Get the text after any type of dash
+        text = re.split(r'\s*-\s*', name)[1]
         
         # Search for the song on Spotify
         results = sp.search(q=text, type='track', limit=1)
