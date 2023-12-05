@@ -9,7 +9,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 logging.basicConfig(
     format="[%(asctime)s] %(levelname)s: %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
-    level=int(1),
+    level=logging.ERROR,
 )
 
 # Specify the folder path
@@ -36,10 +36,18 @@ for filename in os.listdir(folder_path):
         # Get the filename without extension
         name = os.path.splitext(filename)[0]
 
-        logging.debug(f'Processing {name}')
+        logging.info(f'Processing {name}')
+
+        if name.find('---') != -1:
+            logging.error(f'{name} is not formatted correctly')
+            pass
         
-        # Get the text after any type of dash
-        text = re.split(r'\s[-–—‒]\s', name)[1]
+        try:
+            # Get the text after any type of dash
+            text = re.split(r'\s[-–—‒]\s', name)[1]
+        except:
+            logging.error(f'Could not process {name}')
+            pass
         
         # Search for the song on Spotify
         results = sp.search(q=text, type='track', limit=1)
@@ -48,6 +56,7 @@ for filename in os.listdir(folder_path):
             spotify_url = results['tracks']['items'][0]['external_urls']['spotify']
         else:
             spotify_url = ''
+            logging.error(f'Could not find {text} on Spotify')
         
         # Create a dictionary object for each file
         file_object = {
