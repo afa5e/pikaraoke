@@ -41,6 +41,9 @@ ydl_opts = {
 with open('./songs.json', 'r') as json_file:
     existing_songs = json.load(json_file)
 
+with open('./spotify.txt', 'r') as spotify_file:
+    existing_spotify = spotify_file.read().splitlines()
+
 # Iterate over the files in the folder
 for filename in os.listdir(folder_path):
     # Check if the file is a song (you can modify this condition based on your file naming convention)
@@ -126,15 +129,9 @@ for filename in os.listdir(folder_path):
         with open(json_file_path, 'w') as json_file:
             json.dump(existing_songs, json_file)
 
-        with open('spotify.txt', 'a+') as spotify_file:
-            existing_file_names = spotify_file.read().splitlines()
-
-            url_exists = False
-            for file_name in existing_file_names:
-                if file_name == spotify_url:
-                    url_exists = True
-                    logging.warning(f'{name} already exists in the file')
-                    break
-
-            if not url_exists:
+        if spotify_url in existing_spotify:
+            logging.warning(f'{text} already exists in the spotify file')
+        else:
+            existing_songs.append(spotify_url)
+            with open('./spotify.txt', 'a') as spotify_file:
                 spotify_file.write(spotify_url + '\n')
