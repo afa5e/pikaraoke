@@ -5,6 +5,7 @@ import spotipy
 import logging
 import re
 import yt_dlp
+import json
 from spotipy.oauth2 import SpotifyClientCredentials
 
 logging.basicConfig(
@@ -30,19 +31,28 @@ client_credentials_manager = SpotifyClientCredentials(
 )
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
+ydl_opts = {
+    'default_search': 'ytsearch1',
+    'format': 'bestaudio/best',
+    'quiet': True
+}
+
+# Read the existing JSON file
+with open('./songs.json', 'r') as json_file:
+    existing_songs = json.load(json_file)
+
 # Iterate over the files in the folder
 for filename in os.listdir(folder_path):
     # Check if the file is a song (you can modify this condition based on your file naming convention)
     if filename.endswith('.mp4'):
-        # Get the filename without extension
-        name = os.path.splitext(filename)[0]
-
         logging.info(f'Processing {filename}')
 
+        # Get the filename without extension
+        name = os.path.splitext(filename)[0]
         if name.find('---') != -1:
             logging.error(f'{name} is not formatted correctly')
             pass
-        
+
         try:
             # Get the text after any type of dash
             text = re.split(r'\s[-–—‒]\s', name)[1]
@@ -50,46 +60,67 @@ for filename in os.listdir(folder_path):
             logging.error(f'Could not process {name}')
             pass
 
-        
+        # Check if the song is already in the JSON file
+        song_exists = False
+        spotify_url = ''
+        youtube_url = ''
+        for song in existing_songs:
+            if song['songName'] == text:
+                song_exists = True
+                spotify_url = song['spotify']
+                youtube_url = song['youtube']
+                break
+
+        if song_exists:
+            logging.info(f'{text} is already in the JSON file')
+
         # Search for the song on Spotify
-        results = sp.search(q=text, type='track', limit=1)
-        if results['tracks']['items']:
-            # Get the Spotify URL for the first search result
-            spotify_url = results['tracks']['items'][0]['external_urls']['spotify']
-        else:
-            spotify_url = ''
-            logging.error(f'Could not find {text} on Spotify')
+        if spotify_url == '':
+            logging.info(f'Searching for {text} on Spotify')
+            results = sp.search(q=text, type='track', limit=1)
+            if results['tracks']['items']:
+                # Get the Spotify URL for the first search result
+                spotify_url = results['tracks']['items'][0]['external_urls']['spotify']
+            else:
+                spotify_url = ''
+                logging.error(f'Could not find {text} on Spotify')
 
+        if youtube_url == '':
+            logging.info(f'Searching for {text} on YouTube')
+            # Search for the song on YouTube
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                try:
+                    search_results = ydl.extract_info(f"ytsearch:{text} lyrics", download=False)
+                    if search_results['entries']:
+                        # Get the YouTube URL for the first search result
+                        youtube_url = search_results['entries'][0]['webpage_url']
+                    else:
+                        logging.error(f'Could not find {text} on YouTube')
+                except yt_dlp.DownloadError:
+                    logging.error(f'Could not search for {text} on YouTube')
+                    youtube_url = ''
 
-        # Search for the song on YouTube
-        ydl_opts = {
-            'default_search': 'ytsearch1',
-            'format': 'bestaudio/best',
-            'quiet': True
-        }
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            try:
-                search_results = ydl.extract_info(f"ytsearch:{text} lyrics", download=False)
-                if search_results['entries']:
-                    # Get the YouTube URL for the first search result
-                    youtube_url = search_results['entries'][0]['webpage_url']
-                else:
-                    logging.error(f'Could not find {text} on YouTube')
-            except yt_dlp.DownloadError:
-                logging.error(f'Could not search for {text} on YouTube')
-                youtube_url = ''
+        # Check if the song already exists in the list
+        song_exists = False
+        for song in file_names:
+            if song['songName'] == text:
+                song_exists = True
+                song['spotify'] = spotify_url
+                song['youtube'] = youtube_url
 
+                break
 
-        # Create a dictionary object for each file
-        file_object = {
-            'songName': text,
-            'filename': filename,
-            'youtube': youtube_url,
-            'spotify': spotify_url
-        }
+        # If the song doesn't exist, add it to the list
+        if not(song_exists):
+            # Create a dictionary object for each file
+            file_object = {
+                'songName': text,
+                'filename': filename,
+                'youtube': youtube_url,
+                'spotify': spotify_url
+            }
 
-        # Append the file object to the list
-        file_names.append(file_object)
+            file_names.append(file_object)
 
         json_file_path = './songs.json'
         with open(json_file_path, 'w') as json_file:
