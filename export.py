@@ -102,7 +102,7 @@ for filename in os.listdir(folder_path):
 
         # Check if the song already exists in the list
         song_exists = False
-        for song in file_names:
+        for song in existing_songs:
             if song['songName'] == text:
                 song_exists = True
                 song['spotify'] = spotify_url
@@ -120,11 +120,11 @@ for filename in os.listdir(folder_path):
                 'spotify': spotify_url
             }
 
-            file_names.append(file_object)
+            existing_songs.append(file_object)
 
         json_file_path = './songs.json'
         with open(json_file_path, 'w') as json_file:
-            json.dump(file_names, json_file)
+            json.dump(existing_songs, json_file)
 
         with open('spotify.txt', 'a+') as spotify_file:
             existing_file_names = spotify_file.read().splitlines()
