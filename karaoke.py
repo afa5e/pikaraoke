@@ -443,7 +443,7 @@ class Karaoke:
             raise e
 
     def get_karaoke_search_results(self, songTitle):
-        return self.get_search_results(songTitle + " karaoke")
+        return self.get_search_results(songTitle + " lyrics")
 
     def download_video(self, video_url, enqueue=False, user="Pikaraoke"):
         logging.info("Downloading video: " + video_url)
