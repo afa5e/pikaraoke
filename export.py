@@ -5,6 +5,12 @@ import spotipy
 import logging
 from spotipy.oauth2 import SpotifyClientCredentials
 
+logging.basicConfig(
+    format="[%(asctime)s] %(levelname)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    level=int(log_level),
+)
+
 # Specify the folder path
 folder_path = '../pikaraoke-songs'
 
