@@ -132,6 +132,6 @@ for filename in os.listdir(folder_path):
         if spotify_url in existing_spotify:
             logging.warning(f'{text} already exists in the spotify file')
         else:
-            existing_songs.append(spotify_url)
+            existing_spotify.append(spotify_url)
             with open('./spotify.txt', 'a') as spotify_file:
                 spotify_file.write(spotify_url + '\n')
