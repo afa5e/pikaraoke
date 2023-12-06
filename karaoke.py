@@ -20,7 +20,7 @@ from unidecode import unidecode
 from lib import omxclient, vlcclient
 from lib.get_platform import get_platform
 
-import export
+from export import exportSongs
 
 if get_platform() != "windows":
     from signal import SIGALRM, alarm, signal
@@ -449,7 +449,7 @@ class Karaoke:
 
     def download_video(self, video_url, enqueue=False, user="Pikaraoke"):
         logging.info("Downloading video: " + video_url)
-        dl_path = self.download_path + "%(title)s---%(id)s.%(ext)s"
+        dl_path = self.download_path + "%(title)s.%(ext)s"
         file_quality = (
             "bestvideo[ext!=webm][height<=1080]+bestaudio[ext!=webm]/best[ext!=webm]"
             if self.high_quality
@@ -464,7 +464,7 @@ class Karaoke:
         if rc == 0:
             logging.debug("Song successfully downloaded: " + video_url)
 
-            th = threading.Thread(target = export)
+            th = threading.Thread(target=exportSongs)
             th.start()
 
             self.get_available_songs()
