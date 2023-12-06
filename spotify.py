@@ -19,7 +19,47 @@ target_folder = "../pikaraoke-songs/"
 
 playlist_id = "https://open.spotify.com/playlist/65iZh65XeiApbnb4ef9LZ4"
 
-def download():
+def download(song):
+    logging.info(str(song["track"]["name"]) + " not downloaded yet. Downloading...")
+
+    command = f'yt-dlp -j --no-playlist --flat-playlist ytsearch1:"{song["track"]["name"]} lyrics"'
+    result = subprocess.run(command, capture_output=True, text=True, shell=True)
+
+    if result.returncode == 0:
+        output = result.stdout.strip()
+        data = json.loads(output)
+        if data:
+            video_url = data['webpage_url']
+        else:
+            logging.error("No video found.")
+            return {"youtube": '', "filename": ''}
+    else:
+        logging.error("Error executing the command.")
+        return {"youtube": '', "filename": ''}
+    
+    filename = f'{unidecode(song["track"]["artists"][0]["name"])} - {unidecode(song["track"]["name"])}'
+
+    cmd = [f'yt-dlp',
+           '-f',
+           'bestvideo[ext!=webm][height<=1080]+bestaudio[ext!=webm]/best[ext!=webm]',
+           '-o',
+           '../pikaraoke-songs/' + filename,
+           video_url
+        ]
+    
+    rc = subprocess.call(cmd)
+    if rc != 0:
+        logging.error("Error code while downloading, retrying once...")
+        rc = subprocess.call(cmd)
+
+    if rc == 0:
+        logging.info("Song successfully downloaded: " + str(video_url))
+        return {"youtube": video_url, "filename": filename}
+    else:
+        logging.error("Error downloading song: " + video_url)
+        return {"youtube": video_url, "filename": ''}
+
+def search():
     logging.info("Searching for songs in " + str(playlist_id))
 
     # Read the client ID and secret from the file
@@ -33,16 +73,16 @@ def download():
     )
     sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
-    spotify_songs = []
+    json_spotify_links = []
 
     # Read the JSON file
     with open(json_file_path, "r") as json_file:
         json_songs = json.load(json_file)
 
     for song in json_songs:
-        spotify_songs.append(song["spotify"])
+        json_spotify_links.append(song["spotify"])
 
-    logging.info("Found " + str(len(spotify_songs)) + " songs in the JSON file.")
+    logging.info("Found " + str(len(json_spotify_links)) + " songs in the JSON file.")
     # Get spotify URLs from playlist
     i = 100
     results = sp.playlist_tracks(playlist_id, offset=0)
@@ -61,45 +101,19 @@ def download():
     for song in playlist_track:
         logging.info("Processing " + str(song["track"]["name"]))
 
-        if song["track"]["external_urls"]["spotify"] not in spotify_songs:
-            logging.info(str(song["track"]["name"]) + " not downloaded yet. Downloading...")
-
-            command = f'yt-dlp -j --no-playlist --flat-playlist ytsearch1:"{song["track"]["name"]} lyrics"'
-            result = subprocess.run(command, capture_output=True, text=True, shell=True)
-
-            if result.returncode == 0:
-                output = result.stdout.strip()
-                data = json.loads(output)
-                if data:
-                    video_url = data['webpage_url']
-                else:
-                    logging.error("No video found.")
-            else:
-                logging.error("Error executing the command.")
-
-            cmd = f'yt-dlp -f bestvideo[ext!=webm][height<=1080]+bestaudio[ext!=webm]/best[ext!=webm] -o \"../pikaraoke-songs/{unidecode(song["track"]["artists"][0]["name"])} - {unidecode(song["track"]["name"])}.mp4\" {video_url}'
-            
-            rc = subprocess.call(cmd)
-            if rc != 0:
-                logging.error("Error code while downloading, retrying once...")
-                rc = subprocess.call(cmd)
-
-            if rc == 0:
-                logging.info("Song successfully downloaded: " + str(video_url))
-                filename = f'{song["track"]["artists"][0]["name"]} - {song["track"]["name"]}.mp4'
-            else:
-                logging.error("Error downloading song: " + video_url)
+        if song["track"]["external_urls"]["spotify"] not in json_spotify_links:
+            paths = download(song)
 
             json_songs.append({
                 "songName": song["track"]["name"],
-                "spotify": song["track"]["external_urls"]["spotify"],
-                "youtube": video_url,
-                "filename": filename
+                "filename": paths["filename"] + '.mp4',
+                "youtube": paths["youtube"],
+                "spotify": song["track"]["external_urls"]["spotify"]
             })
 
             with open(json_file_path, 'w') as json_file:
                 json.dump(json_songs, json_file)
 
 if __name__ == '__main__':
-    download()
+    search()
     logging.info("Done.")
