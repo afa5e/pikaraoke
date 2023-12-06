@@ -137,5 +137,7 @@ def exportSongs():
                 with open('./spotify.txt', 'a') as spotify_file:
                     spotify_file.write(spotify_url + '\n')
 
+    logging.info('Export done')
+
 if __name__ == '__main__':
     exportSongs()
