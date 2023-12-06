@@ -3,6 +3,7 @@ import logging
 import subprocess
 import spotipy
 import requests
+import socket
 from spotipy.oauth2 import SpotifyClientCredentials
 from unidecode import unidecode
 
@@ -19,6 +20,19 @@ json_file_path = "./songs.json"
 target_folder = "../pikaraoke-songs/"
 
 playlist_id = "https://open.spotify.com/playlist/65iZh65XeiApbnb4ef9LZ4"
+
+
+def get_ip(self):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # doesn't even have to be reachable
+        s.connect(("10.255.255.255", 1))
+        IP = s.getsockname()[0]
+    except Exception:
+        IP = "127.0.0.1"
+    finally:
+        s.close()
+    return IP
 
 def download(song):
     logging.info(str(song["track"]["name"]) + " not downloaded yet. Downloading...")
@@ -115,10 +129,7 @@ def search():
             with open(json_file_path, 'w') as json_file:
                 json.dump(json_songs, json_file)
 
-
-    refresh_url = url_for('refresh')
-
-    response = requests.get(refresh_url)
+    response = requests.get(get_ip() + ":5000/reload")
 
 if __name__ == '__main__':
     search()
