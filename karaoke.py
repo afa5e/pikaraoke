@@ -20,6 +20,8 @@ from unidecode import unidecode
 from lib import omxclient, vlcclient
 from lib.get_platform import get_platform
 
+import export
+
 if get_platform() != "windows":
     from signal import SIGALRM, alarm, signal
 
@@ -461,6 +463,10 @@ class Karaoke:
             rc = subprocess.call(cmd)  # retry once. Seems like this can be flaky
         if rc == 0:
             logging.debug("Song successfully downloaded: " + video_url)
+
+            th = threading.Thread(target = export)
+            th.start()
+
             self.get_available_songs()
             if enqueue:
                 y = self.get_youtube_id_from_url(video_url)
