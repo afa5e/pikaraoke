@@ -581,7 +581,7 @@ def expand_fs():
 
 @app.route("/spotify")
 def spotify():
-    th = threading.thread(target = spotifyDownloader.download())
+    th = threading.Thread(target = spotifyDownloader.download())
     th.start()
     flash("Downloading")
     return redirect(url_for("home"))
