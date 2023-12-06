@@ -20,6 +20,7 @@ from flask_babel import Babel
 from flask_paginate import Pagination, get_page_parameter
 
 import karaoke
+import spotify as spotifyDownloader
 from constants import LANGUAGES, VERSION
 from lib.get_platform import get_platform
 from lib.vlcclient import get_default_vlc_path
@@ -577,6 +578,10 @@ def expand_fs():
     else:
         flash("You don't have permission to resize the filesystem", "is-danger")
     return redirect(url_for("home"))
+
+@app.route("/spotify")
+def spotify():
+    spotifyDownloader.download()
 
 
 # Handle sigterm, apparently cherrypy won't shut down without explicit handling
