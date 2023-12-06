@@ -22,7 +22,7 @@ target_folder = "../pikaraoke-songs/"
 playlist_id = "https://open.spotify.com/playlist/65iZh65XeiApbnb4ef9LZ4"
 
 
-def get_ip(self):
+def get_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
         # doesn't even have to be reachable
@@ -129,7 +129,7 @@ def search():
             with open(json_file_path, 'w') as json_file:
                 json.dump(json_songs, json_file)
 
-    response = requests.get(get_ip() + ":5000/reload")
+    response = requests.get("http://" + get_ip() + ":5555/reload")
 
 if __name__ == '__main__':
     search()
