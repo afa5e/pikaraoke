@@ -581,7 +581,10 @@ def expand_fs():
 
 @app.route("/spotify")
 def spotify():
-    spotifyDownloader.download()
+    th = threading.thread(target = spotifyDownloader.download())
+    th.start()
+    flash("Downloading")
+    return redirect(url_for("home"))
 
 
 # Handle sigterm, apparently cherrypy won't shut down without explicit handling
