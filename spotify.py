@@ -5,7 +5,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from unidecode import unidecode
 
-from karaoke import get_available_songs
+from karaoke import Karaoke
 
 logging.basicConfig(
     format="[%(asctime)s] %(levelname)s: %(message)s",
@@ -116,7 +116,7 @@ def search():
             with open(json_file_path, 'w') as json_file:
                 json.dump(json_songs, json_file)
 
-    get_available_songs()
+    Karaoke.get_available_songs()
 
 if __name__ == '__main__':
     search()
