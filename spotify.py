@@ -129,7 +129,8 @@ def search():
             with open(json_file_path, 'w') as json_file:
                 json.dump(json_songs, json_file)
 
-    response = requests.get("http://" + get_ip() + ":5555/reload")
+    requests.get("http://" + get_ip() + ":5555/refresh")
+    logging.info("Finished syncing with spotify")
 
 if __name__ == '__main__':
     search()
