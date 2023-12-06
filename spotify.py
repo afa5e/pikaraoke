@@ -2,10 +2,9 @@ import json
 import logging
 import subprocess
 import spotipy
+import requests
 from spotipy.oauth2 import SpotifyClientCredentials
 from unidecode import unidecode
-
-from karaoke import Karaoke
 
 logging.basicConfig(
     format="[%(asctime)s] %(levelname)s: %(message)s",
@@ -116,7 +115,10 @@ def search():
             with open(json_file_path, 'w') as json_file:
                 json.dump(json_songs, json_file)
 
-    Karaoke.get_available_songs()
+
+    refresh_url = url_for('refresh')
+
+    response = requests.get(refresh_url)
 
 if __name__ == '__main__':
     search()
