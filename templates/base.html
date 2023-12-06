@@ -159,7 +159,7 @@
           <span>{% trans %}Browse{% endtrans %}</span>
         </a>
         <a id="Spotify" class="navbar-item" href="{{ url_for('spotify') }}">
-            <i class="icon icon-folder-open-empty" title="Spotify"></i>
+            <i class="icon" title="Spotify"><img href="{{ url_for(static, filename='images/spotify.png') }}" height="100%"></img></i>
             {# MSG: Scrape spotify playlist to add songs. #}
             <span>{% trans %}Spotify{% endtrans %}</span>
         </a>

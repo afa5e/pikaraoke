@@ -5,6 +5,8 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from unidecode import unidecode
 
+from app import refresh
+
 logging.basicConfig(
     format="[%(asctime)s] %(levelname)s: %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
@@ -113,6 +115,8 @@ def search():
 
             with open(json_file_path, 'w') as json_file:
                 json.dump(json_songs, json_file)
+
+    refresh()
 
 if __name__ == '__main__':
     search()
